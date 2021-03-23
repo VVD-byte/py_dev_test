@@ -10,10 +10,10 @@ from .serializer import PurseSerializer, TransactionsSerializer
 
 def help(func):
     def wrap(*args, **kwargs):
-        #try:
-        return Response(func(*args, **kwargs))
-        #except Exception as e:
-        #    return Response({'error': 'Ошибка данных'})
+        try:
+            return Response(func(*args, **kwargs))
+        except Exception as e:
+            return Response({'error': 'Ошибка данных'})
     return wrap
 
 
@@ -91,7 +91,7 @@ class Transact(APIView):
     def get(self, request):
         if not request.query_params.get('purse', None) is None:
             dat = Transactions.objects.filter(purse__user=request.user.id,
-                                              purse=request.query_params.get('purse', None))
+                                              purse__id=request.query_params.get('purse', None))
         else:
             dat = Transactions.objects.filter(purse__user=request.user.id)
         ser = TransactionsSerializer(dat, many=True)
@@ -123,5 +123,6 @@ class Transact(APIView):
 
     @help
     def delete(self, request):
-        dat = Transactions.objects.filter(purse__user=request.user.id).first()
+        dat = Transactions.objects.filter(id=request.query_params.get('trans_id', None)).first()
         dat.delete()
+        return {'delete': True}
